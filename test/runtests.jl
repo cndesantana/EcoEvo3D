@@ -1,3 +1,4 @@
+Pkg.checkout("EcoEvo3D","model1")
 using EcoEvo3D
 
 function main()
