@@ -4,12 +4,12 @@ using EcoEvo3D
 function main()
 	seed = 77;#seed for random numbers (to control the outputs)
 	nreal = 10;#Number of realizations
-	Gmax = 100;#Maximum number of Generations
+	Gmax = 200;#Maximum number of Generations
 	J = 10000;#Total Number of individuals in the system 
-	anaG = round(Int64,J*2)::Int64;#Threshold to consider speciation (anagenesis and cladogenesis)
-	v =  (0.00001 + rand()* 0.001)::Float64;#Cladogenesis speciation
-	mr = (0.00001 + rand()* 0.0001)::Float64;#Regional migration - 
-	ml = (0.002 + rand()* 0.2)::Float64;#Local Migration
+	anaG = J*2;#Threshold to consider speciation (anagenesis and cladogenesis)
+	v =  (0.00001 + rand()* 0.001);#Cladogenesis speciation
+	mr = (0.00001 + rand()* 0.0001);#Regional migration - 
+	ml = (0.002 + rand()* 0.2);#Local Migration
 
         
 	distmatfile = "upstream_cost0.001_size8_m1.txt";#Name of the file that contains the location of the points with clownfishes.

@@ -13,28 +13,28 @@ function readDistanceMatrix(filename)
 	dat;
 end
 
-function changediagonal!(MA::Array{Int64,2},nrows,value)
+function changediagonal!(MA,nrows,value)
 	@inbounds for(i in 1:nrows)
 		@inbounds MA[i,i]=value;
 	end
 end
 
-function createMRM(MRM::Array{Int64,2},Sti::Int64,Sp::Int64,ts::Int64)
+function createMRM(MRM,Sti,Sp,ts)
 	MRM = [Sti Sp 1 ts];
 	MRM;
 end
 
-function createMC(MC::Array{Int64,2},Sti::Int64,Sp::Int64,ts::Int64)
+function createMC(MC,Sti,Sp,ts)
 	MC = [Sti Sp 1 ts];
 	MC;
 end
 
-function createMA(MA::Array{Int64,2},Sti::Int64,Stj::Int64,Sp::Int64,ts::Int64)
+function createMA(MA,Sti,Stj,Sp,ts)
 	MA = [Sti Stj Sp 1 ts];
 	MA;
 end
 
-function updateMC(MC::Array{Int64,2})
+function updateMC(MC)
 	if length(MC)>0
 		MC[:,3] = MC[:,3].+1;#event: -1 for extinction; 1 for speciation
 	end
@@ -42,14 +42,14 @@ function updateMC(MC::Array{Int64,2})
 	MC;
 end
 
-function updateMA(MA::Array{Int64,2})
+function updateMA(MA)
 	if length(MA)>0
 		MA[:,4]= MA[:,4] .+ 1;
 	end
 	MA;
 end
 
-function checkIfThereIsMRM(MRM::Array{Int64,2},Sti::Int64,Sp::Int64,ts::Int64)
+function checkIfThereIsMRM(MRM,Sti,Sp,ts)
 	if length(MRM)==0
 		MRM = createMRM(MRM,Sti,Sp,ts);
 	else
@@ -61,7 +61,7 @@ function checkIfThereIsMRM(MRM::Array{Int64,2},Sti::Int64,Sp::Int64,ts::Int64)
 	MRM;
 end                                    
 
-function checkIfThereIsMC(MC::Array{Int64,2},Sti::Int64,Sp::Int64,ts::Int64)
+function checkIfThereIsMC(MC,Sti,Sp,ts)
 	if length(MC)==0
 		MC = createMC(MC,Sti,Sp,ts);
 	else
@@ -77,16 +77,16 @@ function printPhylogeny(new,old,ts,phylogenyfile,ri)
 	writedlm(phylogenyfile,[ri old new ts],' '); 
 end
 
-function checkAna(MA::Array{Int64,2},R::Array{Int64,2},anaG::Int64,lastspecies::Int64,listofanagenesis::Array{Int64,2},ts,phylogenyfile,ri)
+function checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
 	pos = [];
 	Sti=0;
 	if length(MA)>0
 		pos = find(MA[:,4] .>= anaG)
 		if length(pos)>0
 		@inbounds for (a in 1:length(pos))
-				@inbounds Sti=MA[pos[a],1]::Int64;#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],1] is the a-th target site
-				@inbounds Stj=MA[pos[a],2]::Int64;#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],2] is the a-th source site 
-				@inbounds Sp=MA[pos[a],3]::Int64;#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],3] is the a-th species 
+				@inbounds Sti=MA[pos[a],1];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],1] is the a-th target site
+				@inbounds Stj=MA[pos[a],2];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],2] is the a-th source site 
+				@inbounds Sp=MA[pos[a],3];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],3] is the a-th species 
 				MA, R, lastspecies,listofanagenesis = AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri);#speciation in target site
 			end
 		end
@@ -94,7 +94,7 @@ function checkAna(MA::Array{Int64,2},R::Array{Int64,2},anaG::Int64,lastspecies::
 	Sti,MA,R,lastspecies,listofanagenesis,pos;
 end
 
-function UAB(MA::Array{Int64,2},MC::Array{Int64,2})
+function UAB(MA,MC)
 	MC = updateMC(MC); 
 	MA = updateMA(MA);
 	MC,MA;
@@ -105,13 +105,13 @@ function UAC(MA)
 	MA;	
 end
 
-function UARM(MA::Array{Int64,2},MC::Array{Int64,2})
+function UARM(MA,MC)
 	MC = updateMC(MC); 
 	MA = updateMA(MA);
 	MC,MA;
 end
 
-function UALM(MA::Array{Int64,2},MC::Array{Int64,2},R::Array{Int64,2},Sti::Int64,Stj::Int64,Sp::Int64,anaG::Int64,retG::Int64,ts::Int64)
+function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
 	MC = updateMC(MC); 
 	MA = updateMA(MA);
 
@@ -136,7 +136,7 @@ end
 
 ########################
 
-function AnagenesisSpeciation(MA::Array{Int64,2},R::Array{Int64,2},Sti::Int64,Stj::Int64,Sp::Int64,lastspecies::Int64,listofanagenesis::Array{Int64,2},ts,phylogenyfile,ri::Int64)
+function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	oldindividuals = find( R[Sti,:].==Sp )#the position of all the individuals of the 'old' species 'Sp' in the target site 
 	R[Sti,oldindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
@@ -146,23 +146,23 @@ function AnagenesisSpeciation(MA::Array{Int64,2},R::Array{Int64,2},Sti::Int64,St
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
 
 	if length(listofanagenesis)>0
-		listofanagenesis = cat(1,listofanagenesis,[Sti lastspecies])::Array{Int64,2};
+		listofanagenesis = cat(1,listofanagenesis,[Sti lastspecies]);
 	else
-		listofanagenesis = cat(1,[Sti lastspecies])::Array{Int64,2};	
+		listofanagenesis = cat(1,[Sti lastspecies]);	
 	end
 
 	MA,R,newspeciesAna,listofanagenesis;
 end
 
-function CladogenesisEvent(MC::Array{Int64,2},R::Array{Int64,2},Sti::Int64,Individual::Int64,lastspecies::Int64,ts,phylogenyfile,ri)
+function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
 	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
    	R[Sti,Individual] = newspeciesClado;
-	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts)::Array{Int64,2};
+	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	MC,R,newspeciesClado; 
 end
 
-function LocalMigrationEvent(R::Array{Int64,2},KillHab::Int64,MigrantHab::Float64,KillInd::Int64,Dc::Array{Float64,2},Ji::Array{Int64,1},S::Int64)
+function LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S)
 	MigrantSpecies = -1;
 
 	allpos = find(Dc[KillHab,:] .>= MigrantHab);#All the sites at a distance lower than the threshold 'MigrantHab'
@@ -173,7 +173,7 @@ function LocalMigrationEvent(R::Array{Int64,2},KillHab::Int64,MigrantHab::Float6
 	return kr-1,R,MigrantSpecies;
 end;
 
-function RegionalMigrationEvent(MRM::Array{Int64,2},R::Array{Int64,2},Sti::Int64,Individual::Int64,ts::Int64,lastspecies::Int64)
+function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
 	newspeciesMR = lastspecies + 1;
    	R[Sti,Individual] = newspeciesMR;
 	MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);                                    
@@ -181,12 +181,12 @@ function RegionalMigrationEvent(MRM::Array{Int64,2},R::Array{Int64,2},Sti::Int64
 	return MRM,R,newspeciesMR; 
 end;
 
-function BirthEvent(R::Array{Int64,2},BirthLocal::Int64,KillInd::Int64,KillHab::Int64)
+function BirthEvent(R,BirthLocal,KillInd,KillHab)
 	R[KillHab,KillInd] = R[KillHab,BirthLocal];
 	R;
 end
 
-function calculateSpeciationMA(MA::Array{Int64,2},listofanagenesis::Array{Int64,2},R::Array{Int64,2},S::Int64,Ji::Array{Int64,1})
+function calculateSpeciationMA(MA,listofanagenesis,R,S,Ji)
 	speciatedMA = round(Int64,zeros(S));
 	if (length(listofanagenesis) > 0)
 		@inbounds for i in 1:S
@@ -203,7 +203,7 @@ function calculateSpeciationMA(MA::Array{Int64,2},listofanagenesis::Array{Int64,
 end
 
 
-function calculateSpeciationMC(MC::Array{Int64,2},R::Array{Int64,2},S::Int64,k::Int64,Ji::Array{Int64,1})
+function calculateSpeciationMC(MC,R,S,k,Ji)
 	speciatedMC = round(Int64,zeros(S));
 	if (length(MC) > 0)
 		@inbounds for i in 1:S
@@ -219,7 +219,7 @@ function calculateSpeciationMC(MC::Array{Int64,2},R::Array{Int64,2},S::Int64,k::
 	speciatedMC;
 end
 
-function calculateSpeciationMR(MRM::Array{Int64,2},R::Array{Int64,2},S::Int64,Ji::Array{Int64,1})
+function calculateSpeciationMR(MRM,R,S,Ji)
 	speciatedMRM = round(Int64,zeros(S));
 	if (length(MRM) > 0)
 		@inbounds for i in 1:S
@@ -235,7 +235,7 @@ function calculateSpeciationMR(MRM::Array{Int64,2},R::Array{Int64,2},S::Int64,Ji
 	speciatedMRM;
 end
 
-function richnessanalysis!(S::Int64,R::Array{Int64,2},Ji::Array{Int64,1},richnessspeciesR,alpharich)	
+function richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich)	
 	#%gamma richness
 	@inbounds for (i in 1:S)
 		@inbounds AR = sort(R'[1:Ji[i],i]);
@@ -246,24 +246,24 @@ function richnessanalysis!(S::Int64,R::Array{Int64,2},Ji::Array{Int64,1},richnes
 	gamma,alpharich;	
 end
 
-function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Float64,ml::Float64,anaG::Int64,distmatfile::ASCIIString,verticesdata::ASCIIString,model::Int64)
-	lastspecies = 0::Int64;
-	DI = readDistanceMatrix(distmatfile)::Array{Float64,2};#the location of the points of the landscape.
-	Dc = cumsum(DI,2)::Array{Float64,2};
-	dT = sum(DI,2)::Array{Float64,2}; 
-	const S = length(DI[:,1])::Int64;#Number of sites
+function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
+	lastspecies = 0;
+	DI = readDistanceMatrix(distmatfile);#the location of the points of the landscape.
+	Dc = cumsum(DI,2);
+	dT = sum(DI,2); 
+	const S = length(DI[:,1]);#Number of sites
 #### To get the cost
         substring = distmatfile[search(distmatfile,'_')+1:end];
-        modelstop = search(substring,'_')::Int64;
-        coststop = search(substring,'t')::Int64;
-	const cost = float(substring[coststop+1:modelstop-1])::Float64;
+        modelstop = search(substring,'_');
+        coststop = search(substring,'t');
+	const cost = float(substring[coststop+1:modelstop-1]);
 
 	dat = readdlm(verticesdata,' ');#Proportion of individuals of each site
 #	Pj = round(Int64,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
 	Pj = dat[:,2];#In case we define different carrying capacities for each site
 	mins = find(dat.==minimum(dat[:,1]));
 	entrypoint = mins[rand(1:length(mins))];
-	t=1::Int64;#Sites have different sizes and are located at different height.
+	t=1;#Sites have different sizes and are located at different height.
 	Ji=round(Int64,J * Pj/sum(Pj));	
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
@@ -273,7 +273,7 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]); 
 
 
-	ts=0::Int64;
+	ts=0;
 
 	R = round(Int64,zeros(S,maximum(Ji)));
 
@@ -282,17 +282,17 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 	MRM = Array(Int64,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
 	@inbounds for (ri in 1:nreal)#realizations
 		srand(seed+(7*ri));
-		s = rand()::Float64;#prob to be a static landscape
+		s = rand();#prob to be a static landscape
 		listofanagenesis = Array(Int64,0,0);
 		
 		#%Resources
-		G = rand(15:Gmax)::Int64;#Minimum of 15 generations
+		G = rand(15:Gmax);#Minimum of 15 generations
 
-		retG = round(Int64,anaG/1000)::Int64;#gene flow retard in anagenetic speciation
+		retG = round(Int64,anaG/1000);#gene flow retard in anagenetic speciation
 
 	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
-			ld = 0.0::Float64;# ld=0 because the landscape is static
+			ld = 0.0;# ld=0 because the landscape is static
 			if ld > s;#%landscape dynamic: rgn
 				#To change the cost 
 			end#ld>s   
@@ -302,11 +302,11 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 				ts = ts+1;#Time step increases
 				mvb = rand();
 		       		#Demography - Resources
-		       		KillHab = rand(1:S)::Int64;#which site to kill
-				KillInd = rand(1:Ji[KillHab])::Int64;#which individual to kill
-				MigrantHab = rand()*maximum(Dc[KillHab,:])::Float64;
+		       		KillHab = rand(1:S);#which site to kill
+				KillInd = rand(1:Ji[KillHab]);#which individual to kill
+				MigrantHab = rand()*maximum(Dc[KillHab,:]);
 
-				BirthLocal = rand(1:Ji[KillHab])::Int64;#which individual to born
+				BirthLocal = rand(1:Ji[KillHab]);#which individual to born
 
 		       		if mvb <= ml;#Local Migration event
 					kr,R,MigrantSpecies = LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S);
@@ -324,12 +324,12 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 					MC,MA = UAB(MA,MC);#Update MA after Birth event
 		       		end;
 ####ANAGENESIS
-				lengthlistbefore = length(listofanagenesis)::Int64;#Size of Anagenesis Matrix before checking for Anagenesis
+				lengthlistbefore = length(listofanagenesis);#Size of Anagenesis Matrix before checking for Anagenesis
 				St,MA,R,lastspecies,listofanagenesis,pos = checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri); #After the update of matrix MA, we check for events of Anagenesis
-				lengthlistafter = length(listofanagenesis)::Int64;#Size of Anagenesis Matrix after checking for Anagenesis
+				lengthlistafter = length(listofanagenesis);#Size of Anagenesis Matrix after checking for Anagenesis
 ####CLADOGENESIS
 #				if ((lengthlistafter - lengthlistbefore) > 0)#If there is at least one Anagenesis Speciation Event
-#					mvc = rand()::Float64;
+#					mvc = rand();
 #					if (mvc <= v);#Probability to occur a Cladogenesis Speciation event
 #						allInd = find(R[St,:].==lastspecies);#All individuals from the new species
 #						if (length(allInd)>0)
