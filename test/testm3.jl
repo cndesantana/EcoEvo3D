@@ -7,7 +7,7 @@ function main()
 	Gmax = 200;#Maximum number of Generations
 	J = 10000;#Total Number of individuals in the system 
 	anaG = round(Int64,J*2);#Threshold to consider speciation (anagenesis and cladogenesis)
-	v =  (0.00001 + rand()* 0.001);#Cladogenesis speciation
+	v =  (0.00001 + rand()* 0.0001);#Cladogenesis speciation
 	mr = (0.00001 + rand()* 0.0001);#Regional migration - 
 	ml = (0.002 + rand()* 0.2);#Local Migration
 
