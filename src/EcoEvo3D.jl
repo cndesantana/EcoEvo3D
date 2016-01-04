@@ -286,7 +286,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 		listofanagenesis = Array(Int64,0,0);
 		
 		#%Resources
-		G = rand(15:Gmax);#Minimum of 15 generations
+#		G = rand(15:Gmax);#Minimum of 15 generations
+		G = Gmax;#Minimum of 15 generations
 
 		retG = round(Int64,anaG/1000);#gene flow retard in anagenetic speciation
 
