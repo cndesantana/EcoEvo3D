@@ -1,9 +1,9 @@
-Pkg.checkout("EcoEvo3D","model1")
+#Pkg.checkout("EcoEvo3D","model1")
 using EcoEvo3D
 
 function main()
-	seed = 1;#seed for random numbers (to control the outputs)
-	nreal = 10;#Number of realizations
+	seed = 17;#seed for random numbers (to control the outputs)
+	nreal = 5;#Number of realizations
 	Gmax = 100;#Maximum number of Generations
 	J = 10000;#Total Number of individuals in the system 
 	anaG = round(Int64,J*2)::Int64;#Threshold to consider speciation (anagenesis and cladogenesis)
