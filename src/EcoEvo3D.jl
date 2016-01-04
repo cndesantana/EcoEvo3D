@@ -310,12 +310,13 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 				BirthLocal = rand(1:Ji[KillHab]);#which individual to born
 
 		       		if mvb <= ml;#Local Migration event
+#                                        println("mvb = ",mvb," , ml = ", ml); 
 					kr,R,MigrantSpecies = LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S);
 					MC,MA,R = UALM(MA,MC,R,KillHab,kr,MigrantSpecies,anaG,retG,ts);#Update Anagenesis after Local Migration event
-		       		elseif (mvb > ml) & (mvb <= ml+mr);#Regional Migration event
+		       		elseif (ml < mvb <= (ml+mr));#Regional Migration event
 					MRM,R,lastspecies = RegionalMigrationEvent(MRM,R,entrypoint,KillInd,ts,lastspecies);#Speciation through the entry point
 					MC,MA = UARM(MA,MC);#Update Anagenesis after Regional Migration event 
-				elseif (mvb > ml+mr) & (mvb <= ml+mr+v)
+				elseif ((ml+mr) < mvb <= (ml+mr+v))
 					if(v > 0)#we only simulate Cladogenesis when the probability is higher than 0
 						MC,R,lastspecies = CladogenesisEvent(MC,R,KillHab,KillInd,lastspecies,ts,phylogenyfile,ri);
 						MA = UAC(MA);#Update Anagenesis after Cladogenesis Speciation
