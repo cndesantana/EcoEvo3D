@@ -2,7 +2,7 @@
 using EcoEvo3D
 
 function main()
-	seed = 17;#seed for random numbers (to control the outputs)
+	seed = 27;#seed for random numbers (to control the outputs)
 	nreal = 5;#Number of realizations
 	Gmax = 100;#Maximum number of Generations
 	J = 10000;#Total Number of individuals in the system 
