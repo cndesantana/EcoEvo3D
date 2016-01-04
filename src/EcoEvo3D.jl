@@ -266,10 +266,10 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	t=1;#Sites have different sizes and are located at different height.
 	Ji=round(Int64,J * Pj/sum(Pj));	
 
-	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
+	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
 
-	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
+	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
 	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]); 
 
 
