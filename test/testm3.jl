@@ -11,7 +11,7 @@ function main()
 	mr = (0.00001 + rand()* 0.0001)::Float64;#Regional migration - 
 	ml = (0.002 + rand()* 0.2)::Float64;#Local Migration
 
-	distmatfile = "upstreamcost_m3_0.txt";#Name of the file that contains the location of the points with clownfishes.
+	distmatfile = "upstream_cost0_size8_m3.txt";#Name of the file that contains the location of the points with clownfishes.
 	verticesdata = "VerticesData.txt";#Name of the file that contains the size and the height of the points with clownfishes.
 	model = 1;
 		
