@@ -253,18 +253,18 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 	dT = sum(DI,2)::Array{Float64,2}; 
 	const S = length(DI[:,1])::Int64;#Number of sites
 #### To get the cost
-        substring=distmatfile[search(distmatfile,'_')+1:end];
+        substring = distmatfile[search(distmatfile,'_')+1:end];
         modelstop = search(substring,'_')::Int64;
         coststop = search(substring,'t')::Int64;
-	const cost=float(substring[coststop+1:modelstop-1])::Float64;
+	const cost = float(substring[coststop+1:modelstop-1])::Float64;
 
-	dat = readdlm(verticesdata,' ')::Array{Float64,2};#Proportion of individuals of each site
-	Pj = round(Int64,ones(S))::Array{Int64,1};#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
-#	Pj = dat[:,2]::Array{Int64,1};#In case we define different carrying capacities for each site
-	mins = find(dat.==minimum(dat[:,1]))::Array{Int64,1};
-	entrypoint = mins[rand(1:length(mins))]::Int64;
+	dat = readdlm(verticesdata,' ');#Proportion of individuals of each site
+#	Pj = round(Int64,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
+	Pj = dat[:,2];#In case we define different carrying capacities for each site
+	mins = find(dat.==minimum(dat[:,1]));
+	entrypoint = mins[rand(1:length(mins))];
 	t=1::Int64;#Sites have different sizes and are located at different height.
-	Ji=round(Int64,J * Pj/sum(Pj))::Array{Int64,1};	
+	Ji=round(Int64,J * Pj/sum(Pj));	
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
@@ -275,7 +275,7 @@ function dynamic(seed::Int64,nreal::Int64,Gmax::Int64,J::Int64,v::Float64,mr::Fl
 
 	ts=0::Int64;
 
-	R = round(Int64,zeros(S,maximum(Ji)))::Array{Int64,2};
+	R = round(Int64,zeros(S,maximum(Ji)));
 
 	MA = Array(Int64,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
 	MC = Array(Int64,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
