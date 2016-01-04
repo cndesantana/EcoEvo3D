@@ -7,9 +7,9 @@ function main()
 	Gmax = 100;#Maximum number of Generations
 	J = 10000;#Total Number of individuals in the system 
 	anaG = round(Int64,J*2)::Int64;#Threshold to consider speciation (anagenesis and cladogenesis)
-	v =  (0.0001 + rand()* 0.001)::Float64;
-	mr = (0.00001 + rand()* 0.0001)::Float64 
-	ml = (0.02 + rand()* 0.2)::Float64;
+	v =  (0.00001 + rand()* 0.001)::Float64;#Cladogenesis speciation
+	mr = (0.00001 + rand()* 0.0001)::Float64;#Regional migration - 
+	ml = (0.002 + rand()* 0.2)::Float64;#Local Migration
 
 	distmatfile = "Dendritic_cost0_size100.txt";#Name of the file that contains the location of the points with clownfishes.
 	verticesdata = "Dendritic_cost0_size100_elevation.txt";#Name of the file that contains the size and the height of the points with clownfishes.
