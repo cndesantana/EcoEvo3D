@@ -5,10 +5,12 @@ readSizeOfLakes<-function(verticesdatafile){
 
 printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
 
+    yrange<-c(0,70);
+    cost<-unlist(strsplit(unlist(strsplit(sufix,'M'))[1],'_'))[5];    
     dat<-read.csv(inputfile1,sep=" ");
     figure1<-paste("Richness_Isolation_",sufix,".png",sep=""); 
     png(figure1,width=1980,height=1280,res=300);
-    plot(dat$dT,dat$alpharich,xlab="Isolation level",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main="Isolation x Richness",lwd=10,log="x");
+    plot(dat$dT,dat$alpharich,xlab="Isolation level",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Isolation x Richness\ncost = ",cost,sep=""),lwd=10,log="x",ylim=yrange);
     dev.off();
     
     figure2<-paste("Richness_Size_Isolation_",sufix,".png",sep=""); 
@@ -17,10 +19,10 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     relativelakessizes<-(dat$Ji/dat$J);
     sumlakessizes<-sum(absolutelakessizes);
     lakessizes<-relativelakessizes*sumlakessizes;
-    plot(lakessizes,dat$alpharich,xlab="Size of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main="Size of lakes x Richness x Isolation",lwd=10,log="x",cex=2*(1-dat$dT));
     mindt<-min(dat$dT);
     maxdt<-max(dat$dT);
-    legend("topleft",legend=c(signif(mindt,3),signif(maxdt,3)),pch=c(19,19),lwd=c(4*(1-mindt),4*(1-maxdt)),title="Isolation level");
+    plot(lakessizes,dat$alpharich,xlab="Size of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Size of lakes x Richness x Isolation\ncost = ",cost,sep=""),lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=yrange);
+    legend("topleft",legend=c(signif(mindt,3),signif(maxdt,3)),pch=c(19,19),pt.cex=c(3.002,1.002),title="Isolation level");
 #    text(lakessizes, par("usr")[3] - 0.025, srt = 45, adj = 1,labels = signif(lakessizes,2),xpd = TRUE, font = 2)
     dev.off();
 
@@ -36,7 +38,7 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     orderbysize<-order(lakessizes);
     lakesnames<-lakesnames[orderbysize];
     lakessizes<-lakessizes[orderbysize];
-    mp<-barplot(rbind(dat$SpecANA[orderbysize],dat$SpecCLA[orderbysize],dat$SpecMR[orderbysize],dat$DispersalRich[orderbysize]),main="Origin of species",xlab="Size of the lakes (Km^2)",ylab="Species",col=c("green","darkblue","yellow","red"),legend=c("ANA","CLA","Regional-Mig","Local-Mig"),args.legend=list(x = "topleft"));
+    mp<-barplot(rbind(dat$SpecANA[orderbysize],dat$SpecCLA[orderbysize],dat$SpecMR[orderbysize],dat$DispersalRich[orderbysize]),main=paste("Origin of species\ncost = ",cost,sep=""),xlab="Size of the lakes (Km^2)",ylab="Species",col=c("green","darkblue","yellow","red"),legend=c("ANA","CLA","Regional-Mig","Local-Mig"),args.legend=list(x = "topleft"),ylim=yrange);
     text(mp, par("usr")[3] - 0.025, srt = 45, adj = 1,labels = signif(lakessizes,2),xpd = TRUE, font = 2)
     dev.off();
 }
@@ -64,7 +66,7 @@ preprocfunc<-function(inputfile){
     		standarddevval[i,j]<-sd(dat[possites,j],na.rm=TRUE)
     	}
     }
-
+    cat("Printing the output files...\n");
     for(i in 1:nsites){
         for(j in 1:nvar){
             cat(paste(averageval[i,j]," ",sep=""),sep=" ",file=averageoutputfile,append=TRUE);
