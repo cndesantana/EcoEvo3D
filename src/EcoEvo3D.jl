@@ -75,6 +75,7 @@ end
 
 function printPhylogeny(new,old,ts,phylogenyfile,ri)
 	writedlm(phylogenyfile,[ri old new ts],' '); 
+        flush(phylogenyfile);
 end
 
 function checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
@@ -140,7 +141,7 @@ function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,ph
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	oldindividuals = find( R[Sti,:].==Sp )#the position of all the individuals of the 'old' species 'Sp' in the target site 
 	R[Sti,oldindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
-	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
+#	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
  
 	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti' 
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
@@ -156,7 +157,7 @@ end
 
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
-	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
+#	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
    	R[Sti,Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	MC,R,newspeciesClado; 
