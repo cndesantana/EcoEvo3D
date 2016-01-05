@@ -73,6 +73,25 @@ function checkIfThereIsMC(MC,Sti,Sp,ts)
 	MC;
 end
 
+function GetRichness(R,S)
+	richnessspeciesR = [];
+	#%gamma richness
+	for (i in 1:S)
+		AR = sort(R'[:,i])
+		richnessspeciesR = [richnessspeciesR; unique(AR)]; 
+	end;
+	extantR = length(unique(sort(richnessspeciesR)));
+	gamma = extantR;
+
+	return gamma;
+end
+
+function OutputPerGeneration(outputfilepergen,ri,cost,J,G,k,anaG,retG,mr,ml,v,gamma)
+	writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma],' '); 
+	flush(outputfilepergen);#To print in the output file each realization
+	return; 
+end
+
 function printPhylogeny(new,old,ts,phylogenyfile,ri)
 	writedlm(phylogenyfile,[ri old new ts],' '); 
         flush(phylogenyfile);
@@ -141,7 +160,7 @@ function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,ph
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	oldindividuals = find( R[Sti,:].==Sp )#the position of all the individuals of the 'old' species 'Sp' in the target site 
 	R[Sti,oldindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
-#	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
+	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
  
 	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti' 
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
@@ -157,7 +176,7 @@ end
 
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
-#	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
+	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
    	R[Sti,Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	MC,R,newspeciesClado; 
@@ -188,7 +207,7 @@ function BirthEvent(R,BirthLocal,KillInd,KillHab)
 end
 
 function calculateSpeciationMA(MA,listofanagenesis,R,S,Ji)
-	speciatedMA = round(Int64,zeros(S));
+	speciatedMA = round(Integer,zeros(S));
 	if (length(listofanagenesis) > 0)
 		@inbounds for i in 1:S
 			@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -205,7 +224,7 @@ end
 
 
 function calculateSpeciationMC(MC,R,S,k,Ji)
-	speciatedMC = round(Int64,zeros(S));
+	speciatedMC = round(Integer,zeros(S));
 	if (length(MC) > 0)
 		@inbounds for i in 1:S
 		@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -221,7 +240,7 @@ function calculateSpeciationMC(MC,R,S,k,Ji)
 end
 
 function calculateSpeciationMR(MRM,R,S,Ji)
-	speciatedMRM = round(Int64,zeros(S));
+	speciatedMRM = round(Integer,zeros(S));
 	if (length(MRM) > 0)
 		@inbounds for i in 1:S
 			@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -260,12 +279,15 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	const cost = float(substring[coststop+1:modelstop-1]);
 
 	dat = readdlm(verticesdata,' ');#Proportion of individuals of each site
-#	Pj = round(Int64,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
+#	Pj = round(Integer,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
 	Pj = dat[:,2];#In case we define different carrying capacities for each site
 	mins = find(dat.==minimum(dat[:,1]));
 	entrypoint = mins[rand(1:length(mins))];
 	t=1;#Sites have different sizes and are located at different height.
-	Ji=round(Int64,J * Pj/sum(Pj));	
+	Ji=round(Integer,J * Pj/sum(Pj));	
+
+	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
+	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma"]); 
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
@@ -276,22 +298,21 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 
 	ts=0;
 
-	R = round(Int64,zeros(S,maximum(Ji)));
+	R = round(Integer,zeros(S,maximum(Ji)));
 
-	MA = Array(Int64,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
-	MC = Array(Int64,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
-	MRM = Array(Int64,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
+	MA = Array(Integer,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
+	MC = Array(Integer,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
+	MRM = Array(Integer,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
 	@inbounds for (ri in 1:nreal)#realizations
 		srand(seed+(7*ri));
 		s = rand();#prob to be a static landscape
-		listofanagenesis = Array(Int64,0,0);
+		listofanagenesis = Array(Integer,0,0);
 		
 		#%Resources
 #		G = rand(15:Gmax);#Minimum of 15 generations
 		G = Gmax;#Minimum of 15 generations
 
-		retG = round(Int64,anaG/1000);#gene flow retard in anagenetic speciation
-
+		retG = round(Integer,anaG/1000);#gene flow retard in anagenetic speciation
 	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
 			ld = 0.0;# ld=0 because the landscape is static
@@ -343,10 +364,12 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 #					end #if mvc
 #				end #if lengthlistafter
 			end;#end S*Ji
+		        gamma = GetRichness(R,S);
+                        OutputPerGeneration(outputfilepergen,ri,cost,J,G,k,anaG,retG,mr,ml,v,gamma)
 		end;#end Gmax
 	
 		#To analyze the resulting richness
-		richnessspeciesR = Int64[];
+		richnessspeciesR = [];
 		alpharich = zeros(S);
 		gamma,alpharich = richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich);
 		SpecANA = calculateSpeciationMA(MA,listofanagenesis,R,S,Ji);
@@ -359,6 +382,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 		end 
 	end#%ri
 	close(outputfile);
+	close(outputfilepergen);
+	close(phylogenyfile);
 #	close(logfile);
 end#ecoevo3d function
 
