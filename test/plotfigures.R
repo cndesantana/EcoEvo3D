@@ -24,7 +24,7 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
 #    text(lakessizes, par("usr")[3] - 0.025, srt = 45, adj = 1,labels = signif(lakessizes,2),xpd = TRUE, font = 2)
     dev.off();
 
-    dat<-read.csv(inputfile2,sep=" ",row.names=NULL);
+    dat<-read.table(inputfile2,header=TRUE);
     figure3<-paste("Speciation_Lakes_",sufix,".png",sep=""); 
     png(figure3,width=1980,height=1280,res=300);
     lakesnames<-paste("lake",1:nsites,sep="");#we should replace this list by the real names of the lakes.
