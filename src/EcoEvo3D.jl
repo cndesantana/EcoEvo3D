@@ -301,10 +301,9 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	@inbounds for (ri in 1:nreal)#realizations
 
 	R = round(Integer,zeros(S,maximum(Ji)));
-
-	MA = Array(Integer,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
-	MC = Array(Integer,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
-	MRM = Array(Integer,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
+	        MA = Array(Integer,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
+	        MC = Array(Integer,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
+	        MRM = Array(Integer,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
 		srand(seed+(7*ri));
 		s = rand();#prob to be a static landscape
 		listofanagenesis = Array(Integer,0,0);
