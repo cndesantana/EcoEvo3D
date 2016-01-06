@@ -289,7 +289,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	Ji=round(Integer,J * Pj/sum(Pj));	
 
 	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
-	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma"]); 
+	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
