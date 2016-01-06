@@ -73,7 +73,7 @@ function checkIfThereIsMC(MC,Sti,Sp,ts)
 	MC;
 end
 
-function GetRichness(R,S)
+function GetGammaRichness(R,S)
 	richnessspeciesR = [];
 	#%gamma richness
 	for (i in 1:S)
@@ -86,8 +86,10 @@ function GetRichness(R,S)
 	return gamma;
 end
 
-function OutputPerGeneration(outputfilepergen,ri,cost,J,G,k,anaG,retG,mr,ml,v,gamma)
-	writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma],' '); 
+function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
+	for i in 1:S
+		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' '); 
+	end
 	flush(outputfilepergen);#To print in the output file each realization
 	return; 
 end
@@ -366,8 +368,14 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 #					end #if mvc
 #				end #if lengthlistafter
 			end;#end S*Ji
-		        gamma = GetRichness(R,S);
-                        OutputPerGeneration(outputfilepergen,ri,cost,J,G,k,anaG,retG,mr,ml,v,gamma)
+			richnessspeciesR = [];
+			alpharich = zeros(S);
+			gamma,alpharich = richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich);
+			SpecANA = calculateSpeciationMA(MA,listofanagenesis,R,S,Ji);
+			SpecCLA = calculateSpeciationMC(MC,R,S,anaG,Ji);
+			SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
+			DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
+			OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich);
 		end;#end Gmax
 	
 		#To analyze the resulting richness
@@ -380,8 +388,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 		DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
 		for i in 1:S
 			writedlm(outputfile,[ri cost model J G anaG retG i Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' '); 
-			flush(outputfile);
 		end 
+		flush(outputfile);
 	end#%ri
 	close(outputfile);
 	close(outputfilepergen);
