@@ -1,7 +1,7 @@
 #Pkg.checkout("EcoEvo3D","model1")
 using EcoEvo3D
 
-function main()
+function main(ngenana_)
 	seed = 177;#seed for random numbers (to control the outputs)
 	nreal = 5;#Number of realizations
 	Gmax = 10000;#Maximum number of Generations
