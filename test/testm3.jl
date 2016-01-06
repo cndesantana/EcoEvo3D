@@ -19,4 +19,11 @@ function main()
 	EcoEvo3D.dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model);
 end
 
-main()
+if(length(ARGS)==0)
+    println();
+    println("Please give as an argment to the program the 'number of generations for anagenesis speciation':");
+    println("To run: julia testm3.jl <anaG>");
+    println();
+else
+    main(float(ARGS[1]))
+end
