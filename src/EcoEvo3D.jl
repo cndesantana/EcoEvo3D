@@ -278,10 +278,10 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
         coststop = search(substring,'t');
 	const cost = float(substring[coststop+1:modelstop-1]);
 
-	dat = readdlm(verticesdata,' ');#Proportion of individuals of each site
+	sitesdata = readdlm(verticesdata,' ',header=true)[1];#Proportion of individuals of each site
 #	Pj = round(Integer,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
-	Pj = dat[:,2];#In case we define different carrying capacities for each site
-	mins = find(dat.==minimum(dat[:,1]));
+	Pj = sitesdata[:,3];#In case we define different carrying capacities for each site we consider the volume of the lakes (third column)
+	mins = find(sitesdata.==minimum(sitesdata[:,1]));#the first column represents the height of the lakes
 	entrypoint = mins[rand(1:length(mins))];
 	t=1;#Sites have different sizes and are located at different height.
 	Ji=round(Integer,J * Pj/sum(Pj));	
@@ -312,7 +312,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 #		G = rand(15:Gmax);#Minimum of 15 generations
 		G = Gmax;#Minimum of 15 generations
 
-		retG = round(Integer,anaG-J);#gene flow retard in anagenetic speciation (1 generation of retard)
+                nGenRetG = 1; #parameter to define gene flow retard in anagenetic speciation (1 generation of retard)
+		retG = nGenRetG*J;#gene flow retard in anagenetic speciation
 	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
 			ld = 0.0;# ld=0 because the landscape is static
