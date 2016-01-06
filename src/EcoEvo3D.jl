@@ -312,7 +312,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 #		G = rand(15:Gmax);#Minimum of 15 generations
 		G = Gmax;#Minimum of 15 generations
 
-		retG = round(Integer,anaG/1000);#gene flow retard in anagenetic speciation
+		retG = round(Integer,anaG-J);#gene flow retard in anagenetic speciation (1 generation of retard)
 	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
 			ld = 0.0;# ld=0 because the landscape is static
