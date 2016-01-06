@@ -147,6 +147,8 @@ function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
 				MA = cat(1,MA,[Sti Stj Sp 1 ts]);#Crea la linea, empiezando con 1
 			end
 		else #Ya hay la linea
+                        println("number of elements: ",length(pos));
+                        println("retG: ",retG);
 #			MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
 			MA[pos,4] = MA[pos,4] .- retG;#retards anagenesis by increasing the remaining 
 #			MA = MA[:,1:size(MA,2).!=pos];#Borra la columna 'pos' de la matriz MA!!
@@ -209,7 +211,7 @@ function BirthEvent(R,BirthLocal,KillInd,KillHab)
 end
 
 function calculateSpeciationMA(MA,listofanagenesis,R,S,Ji)
-	speciatedMA = round(Integer,zeros(S));
+	speciatedMA = zeros(S);
 	if (length(listofanagenesis) > 0)
 		@inbounds for i in 1:S
 			@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -226,7 +228,7 @@ end
 
 
 function calculateSpeciationMC(MC,R,S,k,Ji)
-	speciatedMC = round(Integer,zeros(S));
+	speciatedMC = zeros(S);
 	if (length(MC) > 0)
 		@inbounds for i in 1:S
 		@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -242,7 +244,7 @@ function calculateSpeciationMC(MC,R,S,k,Ji)
 end
 
 function calculateSpeciationMR(MRM,R,S,Ji)
-	speciatedMRM = round(Integer,zeros(S));
+	speciatedMRM = zeros(S);
 	if (length(MRM) > 0)
 		@inbounds for i in 1:S
 			@inbounds speciesR = unique(sort(R'[1:Ji[i],i]))';
@@ -281,8 +283,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	const cost = float(substring[coststop+1:modelstop-1]);
 
 	sitesdata = readdlm(verticesdata,' ',header=true)[1];#Proportion of individuals of each site
-#	Pj = round(Integer,ones(S));#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
-	Pj = sitesdata[:,3];#In case we define different carrying capacities for each site we consider the volume of the lakes (third column)
+#	Pj = ones(S);#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
+	Pj = sitesdata[:,2];#In case we define different carrying capacities for each site we consider the volume of the lakes (third column)
 	mins = find(sitesdata.==minimum(sitesdata[:,1]));#the first column represents the height of the lakes
 	entrypoint = mins[rand(1:length(mins))];
 	t=1;#Sites have different sizes and are located at different height.
@@ -303,23 +305,24 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	@inbounds for (ri in 1:nreal)#realizations
 
 	        R = round(Integer,zeros(S,maximum(Ji)));
-	        MA = Array(Integer,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
-	        MC = Array(Integer,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
-	        MRM = Array(Integer,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
+	        MA = Array(Number,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
+	        MC = Array(Number,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
+	        MRM = Array(Number,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
 		srand(seed+(7*ri));
 		s = rand();#prob to be a static landscape
-		listofanagenesis = Array(Integer,0,0);
+		listofanagenesis = Array(Number,0,0);
 		
 		#%Resources
 #		G = rand(15:Gmax);#Minimum of 15 generations
 		G = Gmax;#Minimum of 15 generations
 
                 nGenAna = anaG/J;
-                nGenRetG = round(Integer,nGenAna/10); #parameter to define gene flow retard in anagenetic speciation (10% of retard)
+                nGenRetG = round(Integer,J*nGenAna/10)+1; #parameter to define gene flow retard in anagenetic speciation (10% of retard, minimum value of retard is 1)
 		retG = nGenRetG*J;#gene flow retard in anagenetic speciation
 	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
-			ld = 0.0;# ld=0 because the landscape is static
+                        println("Generation ",k);
+     			ld = 0.0;# ld=0 because the landscape is static
 			if ld > s;#%landscape dynamic: rgn
 				#To change the cost 
 			end#ld>s   
