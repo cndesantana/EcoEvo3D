@@ -137,21 +137,21 @@ function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
 	MC = updateMC(MC); 
 	MA = updateMA(MA);
 
+        println("				UALM Parameters: ", Sti, ",",Stj, ",",Sp, ",",anaG, ",",retG, ",",ts);
 	if length(MA)==0 #Si no hay MA
-		MA = createMA(MA,Sti,Stj,Sp,ts);#Crea MA
+                println("				START Anagenesis...",Sti,",",Stj,",",Sp);
+		MA = createMA(MA,Sti,Stj,Sp,ts);#Create MA
 	else#Si hay MA
 		pos = find( (MA[:,1].==Sti) & (MA[:,2].==Stj) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' coming from site 'Stj' to site 'Sti'
 		if length(pos)==0 #No hay la linea
 			indalive = length(find(R[Sti,:].==Sp))#Hay individuos de la specie sp vivos en el sitio Sti
 			if (indalive == 0) #Checking if there are individuals of species 'Sp' alive in site 'Sti'
-				MA = cat(1,MA,[Sti Stj Sp 1 ts]);#Crea la linea, empiezando con 1
+                		println("				START Anagenesis...",Sti,",",Stj,",",Sp);
+				MA = cat(1,MA,[Sti Stj Sp 1 ts]);#Create the row in MA matrix, starting by 1
 			end
 		else #Ya hay la linea
-                        println("number of elements: ",length(pos));
-                        println("retG: ",retG);
-#			MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
+                	println("				DELAY Anagenesis...",Sti,",",Stj,",",Sp);
 			MA[pos,4] = MA[pos,4] .- retG;#retards anagenesis by increasing the remaining 
-#			MA = MA[:,1:size(MA,2).!=pos];#Borra la columna 'pos' de la matriz MA!!
 		end
 	end
 
@@ -163,6 +163,7 @@ end
 function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	oldindividuals = find( R[Sti,:].==Sp )#the position of all the individuals of the 'old' species 'Sp' in the target site 
+        println("	ANAgenesis Speciation");
 	R[Sti,oldindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
 	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
  
@@ -181,6 +182,7 @@ end
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
 	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
+        println("	CLADOgenesis Speciation");
    	R[Sti,Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	MC,R,newspeciesClado; 
@@ -193,12 +195,16 @@ function LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S)
 	kr = minimum(allpos[find(allpos .!= KillHab)]);
 	MigrantInd = rand(1:Ji[kr]);
 	MigrantSpecies = R[kr,MigrantInd];
+        println("	LOCAL Migration");
+	println("	Parameters: ",KillHab,",",kr,",",MigrantSpecies);
 	R[KillHab,KillInd] = R[kr,MigrantInd];
 	return kr-1,R,MigrantSpecies;
 end;
 
 function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
 	newspeciesMR = lastspecies + 1;
+        println("	REGIONAL Migration");
+	println("	Parameters: ",Sti,",",newspeciesMR);
    	R[Sti,Individual] = newspeciesMR;
 	MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);                                    
 
@@ -206,6 +212,7 @@ function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
 end;
 
 function BirthEvent(R,BirthLocal,KillInd,KillHab)
+#        println("	BIRTH");
 	R[KillHab,KillInd] = R[KillHab,BirthLocal];
 	R;
 end
