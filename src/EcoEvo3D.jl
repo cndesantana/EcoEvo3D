@@ -91,9 +91,9 @@ function GetGammaRichness(R,S)
 	return gamma;
 end
 
-function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
+function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,lakesArea,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
 	for i in 1:S
-		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
+		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i lakesArea[i] alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
 	end
 	flush(outputfilepergen);#To print in the output file each realization
 	return;
@@ -137,7 +137,8 @@ function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
       			end
 		else #Ya hay la linea
 #			println("<<<<<<<<<<< R E T A R D    A N A G E N E S I S   <<<<<<<<<<<<<<<<<");
-			MA[pos,4] = MA[pos,4] .+ retG;#retards anagenesis by increasing the remaining
+#			MA[pos,4] = MA[pos,4] .+ retG;#retards anagenesis by increasing the remaining
+			MA[pos,4] = MA[pos,4] .+ 1;#retards anagenesis by increasing the remaining
 		end
 	end
   	return MC,MA,R;
@@ -166,7 +167,7 @@ function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,ph
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	ancientindividuals = find( R[Sti].==Sp )#the position of all the individuals of the ancient species 'Sp' in the target site
 	R[Sti][ancientindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
-        println("new ANAgenesis Speciation : Species ",newspeciesAna," - time: ",ts);
+#        println("new ANAgenesis Speciation : Species ",newspeciesAna," - time: ",ts);
  	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti'
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
 	printPhylogeny(phylogenyfile,Sp,newspeciesAna,ts,ri);
@@ -183,7 +184,7 @@ end
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
 	printPhylogeny(phylogenyfile,R[Sti][Individual],newspeciesClado,ts,ri);
-        println("new CLADOgenesis Speciation : Species ",newspeciesClado," - time: ",ts);
+#        println("new CLADOgenesis Speciation : Species ",newspeciesClado," - time: ",ts);
    	R[Sti][Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	return MC,R,newspeciesClado;
@@ -204,7 +205,7 @@ end;
 function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
   newspeciesMR = lastspecies + 1;
   R[Sti][Individual] = newspeciesMR;
-  println("new RegionalMig Speciation: Species ",newspeciesMR," - time: ",ts)
+#  println("new RegionalMig Speciation: Species ",newspeciesMR," - time: ",ts)
   MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);
 
   return MRM,R,newspeciesMR;
@@ -308,17 +309,19 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 
 	sitesdata = readdlm(verticesdata,' ',header=true)[1];#Proportion of individuals of each site
 #	Pj = ones(S);#Proportion of individuals of each site - if an input file is not defined, the proportion is the same for each site
-	Pj = sitesdata[:,2];#In case we define different carrying capacities for each site we consider the volume of the lakes (third column)
+        lakesVolume = sitesdata[:,2];
+        lakesArea = sitesdata[:,3];
+	Pj = lakesVolume;#In case we define different carrying capacities for each site we consider the volume of the lakes (third column)
 	mins = find(sitesdata.==minimum(sitesdata[:,1]));#the first column represents the height of the lakes
 	entrypoint = mins[rand(1:length(mins))];
 	t=1;#Sites have different sizes and are located at different height.
 	Ji=round(Integer,J * Pj/sum(Pj));
 
 	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
-	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
+	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site lakeArea alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
-	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
+	writedlm(outputfile,["Real Cost Model J G anaG retG Site lakeArea Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
 	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
 	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]);
@@ -401,7 +404,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 		SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 		DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
 		for i in 1:S
-			writedlm(outputfile,[ri cost model J G anaG retG i Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
+			writedlm(outputfile,[ri cost model J G anaG retG i lakesArea[i] Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
 		end
 		flush(outputfile);
 	end#%ri
