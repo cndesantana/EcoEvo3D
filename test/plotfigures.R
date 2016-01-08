@@ -55,41 +55,42 @@ printfigures<-function(inputfile1,inputfile2,inputfile3,nsites,sufix,verticesdat
 #    sumlakesareas<-sum(absolutelakesareas);
 #    lakesareas<-absolutelakesareas*sumlakesareas;
     lakesareas<-readAreaOfLakes(verticesdatafile);#areas of the lakes (one value per lake)
-    lakesnames<-lakesnames[order(lakesareas)];
+    orderbysize<-order(lakesareas);
+    lakesnames<-lakesnames[orderbysize];
     mp<-barplot(rbind(dat$SpecANA[orderbysize],dat$SpecCLA[orderbysize],dat$SpecMR[orderbysize],dat$DispersalRich[orderbysize]),main=paste("Origin of species\ncost = ",cost,", anaG = ",anaG,sep=""),xlab="Size of the lakes (Km^2)",ylab="Species",col=c("green","darkblue","yellow","red"),legend=c("ANA","CLA","Regional-Mig","Local-Mig"),args.legend=list(x = "topleft"),ylim=yrange);
     text(mp, par("usr")[3] - 0.75, srt = 45, adj = 1,labels = signif(lakesareas,2),xpd = TRUE, font = 2)
     dev.off();
 
-    dat1<-read.table("./outputav_RichnessPerSite_AnaG_20000_cost_0.0_MR_3.2e-5_VR_6.09e-6.txt",header=TRUE)
-    dat2<-read.table("./outputsd_RichnessPerSite_AnaG_20000_cost_0.0_MR_3.2e-5_VR_6.09e-6.txt",header=TRUE)
-    dat3<-read.table("./outputav_RichnessPerSite_AnaG_20000_cost_0.001_MR_6.93e-5_VR_2.04e-6.txt",header=TRUE)
-    dat4<-read.table("./outputsd_RichnessPerSite_AnaG_20000_cost_0.001_MR_6.93e-5_VR_2.04e-6.txt",header=TRUE)
-
-    yy1<-dat1$SpecANA;
-    ee1<-dat2$SpecANA;
-    yy2<-dat3$SpecANA;
-    ee2<-dat4$SpecANA;
-    png("./anagenesis.png",width=1980,height=1280,res=300)
-    plot(lakesareas,yy1,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,8),main="Anagenesis Speciation");
-    error.bar(lakesareas,yy1,ee1,"black")
-    par(new=T)
-    plot(lakesareas,yy2,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,8),col=2);
-    error.bar(lakesareas,yy2,ee2,"red")
-    legend("topleft",legend=c("cost = 0","cost = 0.001"),col=c(1,2),title="costs",pch=c(19,19),pt.cex=2.002);
-    dev.off();
-
-    yy1<-dat1$DispersalRich;
-    ee1<-dat2$DispersalRich;
-    yy2<-dat3$DispersalRich;
-    ee2<-dat4$DispersalRich;
-    png("./dispersal.png",width=1980,height=1280,res=300)
-    plot(lakesareas,yy1,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,70),main="Local Migration");
-    error.bar(lakesareas,yy1,ee1,"black")
-    par(new=T)
-    plot(lakesareas,yy2,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,70),col=2);
-    error.bar(lakesareas,yy2,ee2,"red")
-    legend("topleft",legend=c("cost = 0","cost = 0.001"),col=c(1,2),title="costs",pch=c(19,19),pt.cex=2.002);
-    dev.off();
+#    dat1<-read.table("./outputav_RichnessPerSite_AnaG_20000_cost_0.0_MR_3.2e-5_VR_6.09e-6.txt",header=TRUE)
+#    dat2<-read.table("./outputsd_RichnessPerSite_AnaG_20000_cost_0.0_MR_3.2e-5_VR_6.09e-6.txt",header=TRUE)
+#    dat3<-read.table("./outputav_RichnessPerSite_AnaG_20000_cost_0.001_MR_6.93e-5_VR_2.04e-6.txt",header=TRUE)
+#    dat4<-read.table("./outputsd_RichnessPerSite_AnaG_20000_cost_0.001_MR_6.93e-5_VR_2.04e-6.txt",header=TRUE)
+#
+#    yy1<-dat1$SpecANA;
+#    ee1<-dat2$SpecANA;
+#    yy2<-dat3$SpecANA;
+#    ee2<-dat4$SpecANA;
+#    png("./anagenesis.png",width=1980,height=1280,res=300)
+#    plot(lakesareas,yy1,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,8),main="Anagenesis Speciation");
+#    error.bar(lakesareas,yy1,ee1,"black")
+#    par(new=T)
+#    plot(lakesareas,yy2,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,8),col=2);
+#    error.bar(lakesareas,yy2,ee2,"red")
+#    legend("topleft",legend=c("cost = 0","cost = 0.001"),col=c(1,2),title="costs",pch=c(19,19),pt.cex=2.002);
+#    dev.off();
+#
+#    yy1<-dat1$DispersalRich;
+#    ee1<-dat2$DispersalRich;
+#    yy2<-dat3$DispersalRich;
+#    ee2<-dat4$DispersalRich;
+#    png("./dispersal.png",width=1980,height=1280,res=300)
+#    plot(lakesareas,yy1,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,70),main="Local Migration");
+#    error.bar(lakesareas,yy1,ee1,"black")
+#    par(new=T)
+#    plot(lakesareas,yy2,xlab="Area of the lakes (km^2)",ylab=expression(paste(beta,"-rich",sep="")),pch=19,lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=c(0,70),col=2);
+#    error.bar(lakesareas,yy2,ee2,"red")
+#    legend("topleft",legend=c("cost = 0","cost = 0.001"),col=c(1,2),title="costs",pch=c(19,19),pt.cex=2.002);
+#    dev.off();
 }
 
 
