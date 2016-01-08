@@ -1,6 +1,12 @@
 # version 0.1
 
-module EcoEvo3D 
+module EcoEvo3D
+
+using StatsBase
+
+function getSampleFromArray(items)
+  return sample(items)
+end
 
 function readLocations(filename)
 	dat = readdlm(filename,'\t');
@@ -38,7 +44,6 @@ function updateMC(MC)
 	if length(MC)>0
 		MC[:,3] = MC[:,3].+1;#event: -1 for extinction; 1 for speciation
 	end
-	
 	MC;
 end
 
@@ -59,7 +64,7 @@ function checkIfThereIsMRM(MRM,Sti,Sp,ts)
 		end
 	end
 	MRM;
-end                                    
+end
 
 function checkIfThereIsMC(MC,Sti,Sp,ts)
 	if length(MC)==0
@@ -78,7 +83,7 @@ function GetGammaRichness(R,S)
 	#%gamma richness
 	for (i in 1:S)
 		AR = sort(R'[:,i])
-		richnessspeciesR = [richnessspeciesR; unique(AR)]; 
+		richnessspeciesR = [richnessspeciesR; unique(AR)];
 	end;
 	extantR = length(unique(sort(richnessspeciesR)));
 	gamma = extantR;
@@ -88,104 +93,102 @@ end
 
 function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
 	for i in 1:S
-		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' '); 
+		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
 	end
 	flush(outputfilepergen);#To print in the output file each realization
-	return; 
+	return;
 end
 
-function printPhylogeny(new,old,ts,phylogenyfile,ri)
-	writedlm(phylogenyfile,[ri old new ts],' '); 
+function printPhylogeny(phylogenyfile,old,new,ts,ri)
+	writedlm(phylogenyfile,[ri old new ts],' ');
         flush(phylogenyfile);
 end
 
-function checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
-	pos = [];
-	Sti=0;
-	if length(MA)>0
-		pos = find(MA[:,4] .>= anaG)
-		if length(pos)>0
-		@inbounds for (a in 1:length(pos))
-				@inbounds Sti=MA[pos[a],1];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],1] is the a-th target site
-				@inbounds Stj=MA[pos[a],2];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],2] is the a-th source site 
-				@inbounds Sp=MA[pos[a],3];#pos represents the lines of the matrix. pos[a] is one line. MA[pos[a],3] is the a-th species 
-				MA, R, lastspecies,listofanagenesis = AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri);#speciation in target site
-			end
-		end
-	end
-	Sti,MA,R,lastspecies,listofanagenesis,pos;
-end
-
 function UAB(MA,MC)
-	MC = updateMC(MC); 
+	MC = updateMC(MC);
 	MA = updateMA(MA);
 	MC,MA;
 end
 
 function UAC(MA)
 	MA = updateMA(MA);
-	MA;	
+	MA;
 end
 
 function UARM(MA,MC)
-	MC = updateMC(MC); 
+	MC = updateMC(MC);
 	MA = updateMA(MA);
 	MC,MA;
 end
 
 function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
-	MC = updateMC(MC); 
+	MC = updateMC(MC);
 	MA = updateMA(MA);
 
-#        println("				UALM Parameters: ", Sti, ",",Stj, ",",Sp, ",",anaG, ",",retG, ",",ts);
 	if length(MA)==0 #Si no hay MA
-#                println("				START Anagenesis...",Sti,",",Stj,",",Sp);
-		MA = createMA(MA,Sti,Stj,Sp,ts);#Create MA
+  	MA = createMA(MA,Sti,Stj,Sp,ts);#Create MA
 	else#Si hay MA
 		pos = find( (MA[:,1].==Sti) & (MA[:,2].==Stj) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' coming from site 'Stj' to site 'Sti'
 		if length(pos)==0 #No hay la linea
-			indalive = length(find(R[Sti,:].==Sp))#Hay individuos de la specie sp vivos en el sitio Sti
+			indalive = length(find(R[Sti].==Sp))#Hay individuos de la specie sp vivos en el sitio Sti
 			if (indalive == 0) #Checking if there are individuals of species 'Sp' alive in site 'Sti'
-#                		println("				START Anagenesis...",Sti,",",Stj,",",Sp);
+        println("<<<<<<<<<<< U P D A T E    A N A G E N E S I S   <<<<<<<<<<<<<<<<<");
 				MA = cat(1,MA,[Sti Stj Sp 1 ts]);#Create the row in MA matrix, starting by 1
-			end
+      end
 		else #Ya hay la linea
-#                	println("				DELAY Anagenesis...",Sti,",",Stj,",",Sp);
-			MA[pos,4] = MA[pos,4] .- retG;#retards anagenesis by increasing the remaining 
+      println("<<<<<<<<<<< R E T A R D    A N A G E N E S I S   <<<<<<<<<<<<<<<<<");
+      println(pos);
+			MA[pos,4] = MA[pos,4] .- retG;#retards anagenesis by increasing the remaining
 		end
 	end
-
-	MC,MA,R;
+  MC,MA,R;
 end
 
 ########################
 
+function checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
+	pos = [];
+	if length(MA)>0
+		pos = find(MA[:,4] .>= anaG)#is there any
+		if length(pos)>0
+      println("Anagenesis Speciation Events: ",length(pos));
+		  @inbounds for (p in pos)
+  			Sti=MA[p,1];#pos represents the rows of the matrix. p is one row. MA[p,1] is the target site
+  			Stj=MA[p,2];#pos represents the rows of the matrix. p is one row. MA[p,2] is the source site
+		  	Sp=MA[p,3];#pos represents the rows of the matrix. p is one row. MA[p,3] is the ancient species
+			  MA, R, lastspecies,listofanagenesis = AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri);#speciation in target site
+#			  MA, R, lastspecies,listofanagenesis = MA, R, lastspecies, listofanagenesis;
+		  end
+	  end
+  end
+  return MA,R,lastspecies,listofanagenesis;
+end
+
 function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
 	newspeciesAna = lastspecies + 1;#the id of the new species
-	oldindividuals = find( R[Sti,:].==Sp )#the position of all the individuals of the 'old' species 'Sp' in the target site 
-#        println("	ANAgenesis Speciation");
-	R[Sti,oldindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
-	printPhylogeny(newspeciesAna,Sp,ts,phylogenyfile,ri);
- 
-	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti' 
+	ancientindividuals = find( R[Sti].==Sp )#the position of all the individuals of the ancient species 'Sp' in the target site
+	R[Sti][ancientindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
+ 	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti'
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
+	printPhylogeny(phylogenyfile,Sp,newspeciesAna,ts,ri);
 
-	if length(listofanagenesis)>0
+  if length(listofanagenesis)>0
 		listofanagenesis = cat(1,listofanagenesis,[Sti lastspecies]);
 	else
-		listofanagenesis = cat(1,[Sti lastspecies]);	
+		listofanagenesis = cat(1,[Sti lastspecies]);
 	end
-
-	MA,R,newspeciesAna,listofanagenesis;
+  writedlm(open("./matrixMA.dat","a"),[ts length(MA)],' ')
+  writedlm(open("./matrixMA.dat","a"),collect(MA),' ')
+	return MA,R,newspeciesAna,listofanagenesis;
 end
 
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
-	printPhylogeny(newspeciesClado,R[Sti,Individual],ts,phylogenyfile,ri);
+	printPhylogeny(phylogenyfile,R[Sti][Individual],newspeciesClado,ts,ri);
 #        println("	CLADOgenesis Speciation");
-   	R[Sti,Individual] = newspeciesClado;
+   	R[Sti][Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
-	MC,R,newspeciesClado; 
+	return MC,R,newspeciesClado;
 end
 
 function LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S)
@@ -194,26 +197,22 @@ function LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S)
 	allpos = find(Dc[KillHab,:] .>= MigrantHab);#All the sites at a distance lower than the threshold 'MigrantHab'
 	kr = minimum(allpos[find(allpos .!= KillHab)]);
 	MigrantInd = rand(1:Ji[kr]);
-	MigrantSpecies = R[kr,MigrantInd];
+	MigrantSpecies = R[kr][MigrantInd];
 #        println("	LOCAL Migration");
 #	println("	Parameters: ",KillHab,",",kr,",",MigrantSpecies);
-	R[KillHab,KillInd] = R[kr,MigrantInd];
+	R[KillHab][KillInd] = R[kr][MigrantInd];
 	return kr-1,R,MigrantSpecies;
 end;
 
 function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
 	newspeciesMR = lastspecies + 1;
-#        println("	REGIONAL Migration");
-#	println("	Parameters: ",Sti,",",newspeciesMR);
-   	R[Sti,Individual] = newspeciesMR;
-	MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);                                    
-
-	return MRM,R,newspeciesMR; 
+  R[Sti][Individual] = newspeciesMR;
+	MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);
+	return MRM,R,newspeciesMR;
 end;
 
 function BirthEvent(R,BirthLocal,KillInd,KillHab)
-#        println("	BIRTH");
-	R[KillHab,KillInd] = R[KillHab,BirthLocal];
+	R[KillHab][KillInd] = R[KillHab][BirthLocal];
 	R;
 end
 
@@ -229,7 +228,6 @@ function calculateSpeciationMA(MA,listofanagenesis,R,S,Ji)
 			end
 		end
 	end
-#	writedlm("MAmatrix.dat",MA,' ');
 	speciatedMA;
 end
 
@@ -246,7 +244,6 @@ function calculateSpeciationMC(MC,R,S,k,Ji)
 			end
 		end
 	end
-#	writedlm("MCmatrix.dat",MC,' ');
 	speciatedMC;
 end
 
@@ -266,7 +263,7 @@ function calculateSpeciationMR(MRM,R,S,Ji)
 	speciatedMRM;
 end
 
-function richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich)	
+function richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich)
 	#%gamma richness
 	@inbounds for (i in 1:S)
 		@inbounds AR = sort(R'[1:Ji[i],i]);
@@ -274,14 +271,29 @@ function richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich)
 		@inbounds alpharich[i] = length(unique(AR));
 	end;
 	gamma = length(unique(sort(richnessspeciesR)));
-	gamma,alpharich;	
+	gamma,alpharich;
 end
 
-function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
+function repeatval(x,N)
+  return map(v -> v=x,1:N);
+end
+
+#Each site starts with one different species
+function initialPopulation!(R,Ji)
+  lastspecies = 0;
+  for(iJ in Ji)#iterating over columns
+     lastspecies = lastspecies+1;
+     popi = repeatval(lastspecies,iJ);
+     push!(R,popi);
+  end
+  return R,lastspecies;
+end
+
+function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,model)
 	lastspecies = 0;
 	DI = readDistanceMatrix(distmatfile);#the location of the points of the landscape.
 	Dc = cumsum(DI,2);
-	dT = sum(DI,2); 
+	dT = sum(DI,2);
 	const S = length(DI[:,1]);#Number of sites
 #### To get the cost
         substring = distmatfile[search(distmatfile,'_')+1:end];
@@ -295,75 +307,64 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 	mins = find(sitesdata.==minimum(sitesdata[:,1]));#the first column represents the height of the lakes
 	entrypoint = mins[rand(1:length(mins))];
 	t=1;#Sites have different sizes and are located at different height.
-	Ji=round(Integer,J * Pj/sum(Pj));	
+	Ji=round(Integer,J * Pj/sum(Pj));
 
-	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
-	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
+	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
-	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
-	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]); 
+	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	writedlm(outputfile,["Real Cost Model J G anaG retG Site Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
-	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")	
-	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]); 
+	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]);
 
 
 	ts=0;
 
 	@inbounds for (ri in 1:nreal)#realizations
 
-	        R = round(Integer,zeros(S,maximum(Ji)));
-	        MA = Array(Number,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
-	        MC = Array(Number,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
-	        MRM = Array(Number,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
+    R=[];
+    initialPopulation!(R,Ji)
+	  MA = Array(Number,0,0);#Matrix to calculate Anagenesis speciation (MA = [Sti, Stj, S, C])
+	  MC = Array(Number,0,0);#Matrix to control Cladogenesis speciation (MC = [Sti, S, E])
+	  MRM = Array(Number,0,0);#Matrix to control events of Regional Migration (MRM = [Sti, S, ts])
 		srand(seed+(7*ri));
 		s = rand();#prob to be a static landscape
 		listofanagenesis = Array(Number,0,0);
-		
+
 		#%Resources
 #		G = rand(15:Gmax);#Minimum of 15 generations
 		G = Gmax;#Minimum of 15 generations
 
-                nGenAna = anaG/J;
-                nGenRetG = round(Integer,J*nGenAna/10)+1; #parameter to define gene flow retard in anagenetic speciation (10% of retard, minimum value of retard is 1)
-		retG = nGenRetG*J;#gene flow retard in anagenetic speciation
-	
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
-#                        println("Generation ",k);
-     			ld = 0.0;# ld=0 because the landscape is static
-			if ld > s;#%landscape dynamic: rgn
-				#To change the cost 
-			end#ld>s   
-
-###### ANAGENESIS
 			@inbounds for (j = 1:sum(Ji))#For each individual in each site
 				ts = ts+1;#Time step increases
 				mvb = rand();
 		       		#Demography - Resources
-		       		KillHab = rand(1:S);#which site to kill
+    		KillHab = rand(1:S);#which site to kill
 				KillInd = rand(1:Ji[KillHab]);#which individual to kill
 				MigrantHab = rand()*maximum(Dc[KillHab,:]);
 
-				BirthLocal = rand(1:Ji[KillHab]);#which individual to born
+				BirthLocal = getSampleFromArray(1:length(R[KillHab]));#which individual to born
 
-		       		if mvb <= ml;#Local Migration event
-#                                        println("mvb = ",mvb," , ml = ", ml); 
+		    if mvb <= ml;#Local Migration event
 					kr,R,MigrantSpecies = LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S);
 					MC,MA,R = UALM(MA,MC,R,KillHab,kr,MigrantSpecies,anaG,retG,ts);#Update Anagenesis after Local Migration event
-		       		elseif (ml < mvb <= (ml+mr));#Regional Migration event
+		    elseif (ml < mvb <= (ml+mr));#Regional Migration event
 					MRM,R,lastspecies = RegionalMigrationEvent(MRM,R,entrypoint,KillInd,ts,lastspecies);#Speciation through the entry point
-					MC,MA = UARM(MA,MC);#Update Anagenesis after Regional Migration event 
+					MC,MA = UARM(MA,MC);#Update Anagenesis after Regional Migration event
 				elseif ((ml+mr) < mvb <= (ml+mr+v))
 					if(v > 0)#we only simulate Cladogenesis when the probability is higher than 0
 						MC,R,lastspecies = CladogenesisEvent(MC,R,KillHab,KillInd,lastspecies,ts,phylogenyfile,ri);
 						MA = UAC(MA);#Update Anagenesis after Cladogenesis Speciation
 					end
-		       		else #Birth event
+		     else #Birth event
 					R = BirthEvent(R,BirthLocal,KillInd,KillHab);#Birth event
 					MC,MA = UAB(MA,MC);#Update MA after Birth event
 		       		end;
 ####ANAGENESIS
 				lengthlistbefore = length(listofanagenesis);#Size of Anagenesis Matrix before checking for Anagenesis
-				St,MA,R,lastspecies,listofanagenesis,pos = checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri); #After the update of matrix MA, we check for events of Anagenesis
+				MA,R,lastspecies,listofanagenesis = checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri); #After the update of matrix MA, we check for events of Anagenesis
 				lengthlistafter = length(listofanagenesis);#Size of Anagenesis Matrix after checking for Anagenesis
 ####CLADOGENESIS
 #				if ((lengthlistafter - lengthlistbefore) > 0)#If there is at least one Anagenesis Speciation Event
@@ -387,7 +388,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 			DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
 			OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich);
 		end;#end Gmax
-	
+
 		#To analyze the resulting richness
 		richnessspeciesR = [];
 		alpharich = zeros(S);
@@ -397,8 +398,8 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,distmatfile,verticesdata,model)
 		SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 		DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
 		for i in 1:S
-			writedlm(outputfile,[ri cost model J G anaG retG i Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' '); 
-		end 
+			writedlm(outputfile,[ri cost model J G anaG retG i Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
+		end
 		flush(outputfile);
 	end#%ri
 	close(outputfile);
