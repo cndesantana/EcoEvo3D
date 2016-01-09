@@ -167,15 +167,15 @@ function AnagenesisSpeciation(MA,R,Sti,Stj,Sp,lastspecies,listofanagenesis,ts,ph
 	newspeciesAna = lastspecies + 1;#the id of the new species
 	ancientindividuals = find( R[Sti].==Sp )#the position of all the individuals of the ancient species 'Sp' in the target site
 	R[Sti][ancientindividuals] = newspeciesAna;#the speciation itself: all the individuals of former species 'Sp' in the target site are now from a new species 'newspeciesAna'
-#        println("new ANAgenesis Speciation : Species ",newspeciesAna," - time: ",ts);
+        println("new ANAgenesis Speciation : Species ",newspeciesAna," - time: ",ts);
  	pos = find( (MA[:,1].==Sti) & (MA[:,3].==Sp))#position in the matrix MA referred to the presence of individuals of species 'Sp' in site 'Sti'
 	MA = MA[1:size(MA,1).!=pos,:];#Borra la linea 'pos' de la matriz MA!!
 	printPhylogeny(phylogenyfile,Sp,newspeciesAna,ts,ri);
 
-  if length(listofanagenesis)>0
-		listofanagenesis = cat(1,listofanagenesis,[Sti lastspecies]);
+  	if length(listofanagenesis)>0
+		listofanagenesis = cat(1,listofanagenesis,[Sti newspeciesAna]);
 	else
-		listofanagenesis = cat(1,[Sti lastspecies]);
+		listofanagenesis = cat(1,[Sti newspeciesAna]);
 	end
 
 	return MA,R,newspeciesAna,listofanagenesis;
@@ -184,7 +184,7 @@ end
 function CladogenesisEvent(MC,R,Sti,Individual,lastspecies,ts,phylogenyfile,ri)
 	newspeciesClado = lastspecies + 1;
 	printPhylogeny(phylogenyfile,R[Sti][Individual],newspeciesClado,ts,ri);
-#        println("new CLADOgenesis Speciation : Species ",newspeciesClado," - time: ",ts);
+        println("new CLADOgenesis Speciation : Species ",newspeciesClado," - time: ",ts);
    	R[Sti][Individual] = newspeciesClado;
 	MC = checkIfThereIsMC(MC,Sti,newspeciesClado,ts);
 	return MC,R,newspeciesClado;
@@ -205,7 +205,7 @@ end;
 function RegionalMigrationEvent(MRM,R,Sti,Individual,ts,lastspecies)
   newspeciesMR = lastspecies + 1;
   R[Sti][Individual] = newspeciesMR;
-#  println("new RegionalMig Speciation: Species ",newspeciesMR," - time: ",ts)
+  println("new RegionalMig Speciation: Species ",newspeciesMR," - time: ",ts)
   MRM = checkIfThereIsMRM(MRM,Sti,newspeciesMR,ts);
 
   return MRM,R,newspeciesMR;
@@ -216,14 +216,15 @@ function BirthEvent(R,BirthLocal,KillInd,KillHab)
 	return R;
 end
 
-function calculateSpeciationMA(MA,listofanagenesis,R,S,Ji)
+function calculateSpeciationMA(listofanagenesis,R)
+	S = length(R);#number of sites equals the number of rows in R
 	speciatedMA = zeros(S);
 	if (length(listofanagenesis) > 0)
 		@inbounds for i in 1:S
 			@inbounds speciesR = unique(sort(R[i]))';
 			pos = find(listofanagenesis[:,1].== i);
 			if length(pos)>0
-				speciesMA = unique(sort(listofanagenesis[pos,2]));
+				speciesMA = listofanagenesis[pos,2];
 				speciatedMA[i] = length(setdiff(speciesMA,setdiff(speciesMA,speciesR))');
 			end
 		end
@@ -342,21 +343,20 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 		G = Gmax;#Minimum of 15 generations
 
 		@inbounds for (k = 1:G)#%population-metapopulation-metacommunity dynamics (not-tracking multitrophic metacommunity dynamics!)
-			@inbounds for (j = 1:sum(Ji))#For each individual in each site
+			@inbounds for (j = 1:J)#For each individual in each site
 				ts = ts+1;#Time step increases
 				mvb = rand();
 		       		#Demography - Resources
-    		KillHab = rand(1:S);#which site to kill
+    				KillHab = rand(1:S);#which site to kill
 				KillInd = rand(1:Ji[KillHab]);#which individual to kill
-        KillIndEntryPoint = rand(1:Ji[entrypoint]);
+        			KillIndEntryPoint = rand(1:Ji[entrypoint]);
 				MigrantHab = rand()*maximum(Dc[KillHab,:]);
-
 				BirthLocal = getSampleFromArray(1:length(R[KillHab]));#which individual to born
 
-		    if mvb <= ml;#Local Migration event
+				if mvb <= ml;#Local Migration event
 					kr,R,MigrantSpecies = LocalMigrationEvent(R,KillHab,MigrantHab,KillInd,Dc,Ji,S);
 					MC,MA,R = UALM(MA,MC,R,KillHab,kr,MigrantSpecies,anaG,retG,ts);#Update Anagenesis after Local Migration event
-		    elseif (ml < mvb <= (ml+mr));#Regional Migration event
+				elseif (ml < mvb <= (ml+mr));#Regional Migration event
 					MRM,R,lastspecies = RegionalMigrationEvent(MRM,R,entrypoint,KillIndEntryPoint,ts,lastspecies);#Speciation through the entry point
 					MC,MA = UARM(MA,MC);#Update Anagenesis after Regional Migration event
 				elseif ((ml+mr) < mvb <= (ml+mr+v))
@@ -364,7 +364,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 						MC,R,lastspecies = CladogenesisEvent(MC,R,KillHab,KillInd,lastspecies,ts,phylogenyfile,ri);
 						MA = UAC(MA);#Update Anagenesis after Cladogenesis Speciation
 					end
-		     else #Birth event
+				else #Birth event
 					R = BirthEvent(R,BirthLocal,KillInd,KillHab);#Birth event
 					MC,MA = UAB(MA,MC);#Update MA after Birth event
 		       		end;
@@ -388,7 +388,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 			richnessspeciesR = [];
 			alpharich = zeros(S);
 			gamma,alpharich = richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich);
-			SpecANA = calculateSpeciationMA(MA,listofanagenesis,R,S,Ji);
+			SpecANA = calculateSpeciationMA(listofanagenesis,R);
 			SpecCLA = calculateSpeciationMC(MC,R,S,anaG,Ji);
 			SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 			DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
@@ -399,14 +399,37 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 		richnessspeciesR = [];
 		alpharich = zeros(S);
 		gamma,alpharich = richnessanalysis!(S,R,Ji,richnessspeciesR,alpharich);
-		SpecANA = calculateSpeciationMA(MA,listofanagenesis,R,S,Ji);
+		SpecANA = calculateSpeciationMA(listofanagenesis,R);
 		SpecCLA = calculateSpeciationMC(MC,R,S,anaG,Ji);
 		SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 		DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
+		matrixfile = open("Rmatrix.txt","a");
+		ANAfile = open("ANAmatrix.txt","a");
+		MRMfile = open("MRMmatrix.txt","a");
 		for i in 1:S
 			writedlm(outputfile,[ri cost model J G anaG retG i lakesArea[i] Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
+                        for j in 1:length(R[i])
+	                        print(matrixfile,R[i][j],' ');
+			end
+	                print(matrixfile,'\n');
 		end
 		flush(outputfile);
+		rowsANA = size(listofanagenesis,1);rowsMRM = size(MRM,1);
+		colsANA = size(listofanagenesis,2);colsMRM = size(MRM,2);
+		
+		for i in 1:rowsANA #number of rows
+			for j in 1:colsANA
+	                        print(ANAfile,listofanagenesis[i,j],' ');
+			end	
+	                print(ANAfile,'\n');
+		end
+		for i in 1:rowsMRM #number of rows
+			for j in 1:colsMRM
+	                        print(MRMfile,MRM[i,j],' ');
+			end	
+	                print(MRMfile,'\n');
+		end
+
 	end#%ri
 	close(outputfile);
 	close(outputfilepergen);
