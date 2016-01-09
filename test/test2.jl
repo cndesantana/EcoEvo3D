@@ -17,7 +17,7 @@ function main(ngenana_,ngenretana_)
 	mr = (0.0001 + rand()* 0.0001);#Regional migration - 
 	ml = (0.08 + rand()* 0.008);#Local Migration
 
-	distmatfile = "upstream_cost0.001_size8_m1.txt";#Name of the file that contains the location of the points with clownfishes.
+	distmatfile = "upstream_cost0_size8_m3.txt";#Name of the file that contains the location of the points with clownfishes.
 	verticesdata = "VerticesData.txt";#Name of the file that contains the size and the height of the points with clownfishes.
 #	verticesdata = "vert.txt";#Name of the file that contains the size and the height of the points with clownfishes.
 	model = 1;

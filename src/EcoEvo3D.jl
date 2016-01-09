@@ -91,9 +91,9 @@ function GetGammaRichness(R,S)
 	return gamma;
 end
 
-function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,lakesArea,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
+function OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,lakesIsolation,lakesArea,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich)
 	for i in 1:S
-		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i lakesArea[i] alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
+		writedlm(outputfilepergen, [ri cost J G k anaG retG mr ml v gamma i lakesIsolation[i] lakesArea[i] alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
 	end
 	flush(outputfilepergen);#To print in the output file each realization
 	return;
@@ -318,7 +318,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 	Ji=round(Integer,J * Pj/sum(Pj));
 
 	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
-	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site lakeArea alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
+	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site dT lakeArea alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
 	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site lakeArea Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
@@ -392,7 +392,7 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 			SpecCLA = calculateSpeciationMC(MC,R,S,anaG,Ji);
 			SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 			DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
-			OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich);
+			OutputPerGeneration(outputfilepergen,ri,cost,J,G,S,k,anaG,retG,mr,ml,v,dT,lakesArea,gamma,alpharich,SpecANA,SpecCLA,SpecMR,DispersalRich);
 		end;#end Gmax
 
 		#To analyze the resulting richness
