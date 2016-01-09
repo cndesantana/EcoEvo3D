@@ -3,9 +3,9 @@ using EcoEvo3D
 
 function main(ngenana_,ngenretana_)
 	seed = 177;#seed for random numbers (to control the outputs)
-	nreal = 1;#Number of realizations
-	Gmax = 1000;#Maximum number of Generations
-	J = 10000;#Total Number of individuals in the system 
+	nreal = 2;#Number of realizations
+	Gmax = 2000;#Maximum number of Generations
+	J = 50000;#Total Number of individuals in the system 
         nGenAna = ngenana_
 	anaG = J*nGenAna;#Threshold to consider speciation (anagenesis and cladogenesis)
         nGenRetG = ngenretana_; #parameter to define gene flow retard in anagenetic speciation (10% of retard, minimum value of retard is 1)
