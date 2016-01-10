@@ -403,32 +403,31 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 		SpecCLA = calculateSpeciationMC(MC,R,S,anaG,Ji);
 		SpecMR = calculateSpeciationMR(MRM,R,S,Ji);
 		DispersalRich = alpharich - (SpecANA + SpecCLA + SpecMR);
-		matrixfile = open("Rmatrix.txt","a");
-		ANAfile = open("ANAmatrix.txt","a");
-		MRMfile = open("MRMmatrix.txt","a");
+#		matrixfile = open("Rmatrix.txt","a");
 		for i in 1:S
 			writedlm(outputfile,[ri cost model J G anaG retG i lakesArea[i] Ji[i] dT[i] mr ml v gamma alpharich[i] SpecANA[i] SpecCLA[i] SpecMR[i] DispersalRich[i]],' ');
-                        for j in 1:length(R[i])
-	                        print(matrixfile,R[i][j],' ');
-			end
-	                print(matrixfile,'\n');
+#                        for j in 1:length(R[i])
+#	                        print(matrixfile,R[i][j],' ');
+#			end
+#	                print(matrixfile,'\n');
 		end
 		flush(outputfile);
-		rowsANA = size(listofanagenesis,1);rowsMRM = size(MRM,1);
-		colsANA = size(listofanagenesis,2);colsMRM = size(MRM,2);
-		
-		for i in 1:rowsANA #number of rows
-			for j in 1:colsANA
-	                        print(ANAfile,listofanagenesis[i,j],' ');
-			end	
-	                print(ANAfile,'\n');
-		end
-		for i in 1:rowsMRM #number of rows
-			for j in 1:colsMRM
-	                        print(MRMfile,MRM[i,j],' ');
-			end	
-	                print(MRMfile,'\n');
-		end
+#		ANAfile = open("ANAmatrix.txt","a");
+#		MRMfile = open("MRMmatrix.txt","a");
+#		rowsANA = size(listofanagenesis,1);rowsMRM = size(MRM,1);
+#		colsANA = size(listofanagenesis,2);colsMRM = size(MRM,2);
+#		for i in 1:rowsANA #number of rows
+#			for j in 1:colsANA
+#	                        print(ANAfile,listofanagenesis[i,j],' ');
+#			end	
+#	                print(ANAfile,'\n');
+#		end
+#		for i in 1:rowsMRM #number of rows
+#			for j in 1:colsMRM
+#	                        print(MRMfile,MRM[i,j],' ');
+#			end	
+#	                print(MRMfile,'\n');
+#		end
 
 	end#%ri
 	close(outputfile);

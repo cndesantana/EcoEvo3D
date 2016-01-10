@@ -9,25 +9,15 @@ error.bar <- function(x, y, upper, mycolor, lower=upper, length=0.1,...){
   arrows(x,y+upper, x, y-lower, col=mycolor, angle=90, code=3, length=length, ...)
 }
 
-readAreaOfLakes<-function(verticesdatafile){
-    dat<-read.csv(verticesdatafile,sep=" ");
-    return(dat[,3]);    
-}
-
-readVolumeOfLakes<-function(verticesdatafile){
-    dat<-read.csv(verticesdatafile,sep=" ");
-    return(dat[,2]);    
-}
-
 
 printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
 
     cat("Plotting...\n");
-    yrange<-c(0,70);
-    xrange<-c(0.05,1.25);
     cost<-unlist(strsplit(unlist(strsplit(sufix,'M'))[1],'_'))[5];    
     dat<-read.table(inputfile1,header=TRUE);#average
     dat2<-read.table(inputfile2,header=TRUE);#sd    
+    yrange<-range(0,150)*1.2;
+    xrange<-c(0.05,1.25);
     anaG<-dat$anaG[1];    
     nrep<-max(dat$Real);
     lakesarea<-dat$lakeArea;
@@ -42,9 +32,9 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     png(figure2,width=1980,height=1280,res=300);
     mindt<-min(dat$dT);#minimal isolation
     maxdt<-max(dat$dT);#maximal isolation
-    plot(lakesarea,dat$alpharich,xlab="Area of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Size of lakes x Richness x Isolation\ncost = ",cost,", anaG = ",anaG,sep=""),lwd=10,log="x",cex=2*(1.001-((dat$dT-mindt)/(maxdt-mindt) )),ylim=yrange);
+    plot(lakesarea,dat$alpharich,xlab="Area of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Size of lakes x Richness x Isolation\ncost = ",cost,", anaG = ",anaG,sep=""),lwd=10,log="x",cex=(1.51-((dat$dT-mindt)/(maxdt-mindt))),ylim=yrange,xlim=range(lakesarea));
     error.bar(x = lakesarea, y = dat$alpharich, upper = dat2$alpharich, lower = dat2$alpharich, mycolor = "black")
-    legend("topleft",legend=c(signif(mindt,3),signif(maxdt,3)),pch=c(19,19),pt.cex=c(3.002,1.002),title="Isolation level");
+    legend("topleft",legend=c(signif(mindt,3),signif(maxdt,3)),pch=c(19,19),pt.cex=c(2.502,1.502),title="Isolation level");
     dev.off();
 
     figure3<-paste("Speciation_LakesPerArea_",sufix,".png",sep=""); 
@@ -108,4 +98,6 @@ inputfile<-args[1];
 verticesdatafile<-args[2];
 
 preprocres<-preprocfunc(inputfile);
+#verticesdatafile<-"./VerticesData.txt"
+#printfigures("./outputav_RichnessPerSite_AnaG_500000.0_cost_0.001_MR_7.99e-5_VR_5.11e-5.txt","./outputsd_RichnessPerSite_AnaG_500000.0_cost_0.001_MR_7.99e-5_VR_5.11e-5.txt","RichnessPerSite_AnaG_500000.0_cost_0.001_MR_7.99e-5_VR_5.11e-5.txt",8,"./VerticesData.txt")
 printfigures(preprocres$file1,preprocres$file2,preprocres$nsites,preprocres$sufix,verticesdatafile);
