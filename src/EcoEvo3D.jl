@@ -137,8 +137,7 @@ function UALM(MA,MC,R,Sti,Stj,Sp,anaG,retG,ts)
       			end
 		else #Ya hay la linea
 #			println("<<<<<<<<<<< R E T A R D    A N A G E N E S I S   <<<<<<<<<<<<<<<<<");
-#			MA[pos,4] = MA[pos,4] .+ retG;#retards anagenesis by increasing the remaining
-			MA[pos,4] = MA[pos,4] .+ 1;#retards anagenesis by increasing the remaining
+			MA[pos,4] = MA[pos,4] .+ retG;#retards anagenesis by increasing the remaining
 		end
 	end
   	return MC,MA,R;
@@ -149,8 +148,8 @@ end
 function checkAna(MA,R,anaG,lastspecies,listofanagenesis,ts,phylogenyfile,ri)
 	pos = [];
 	if length(MA)>0
-		pos = find(MA[:,4] .<= 0)#is there any
-		if length(pos)>0
+		pos = find(MA[:,4] .== 0)#find the anagenesis events 
+		if length(pos)>0#is there was an anagenesis event
 		  @inbounds for (p in pos)
   			Sti=round(Integer,MA[p,1]);#pos represents the rows of the matrix. p is one row. MA[p,1] is the target site
   			Stj=round(Integer,MA[p,2]);#pos represents the rows of the matrix. p is one row. MA[p,2] is the source site
