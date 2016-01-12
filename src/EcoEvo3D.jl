@@ -317,13 +317,13 @@ function dynamic(seed,nreal,Gmax,J,v,mr,ml,anaG,retG,distmatfile,verticesdata,mo
 	t=1;#Sites have different sizes and are located at different height.
 	Ji=round(Integer,J * Pj/sum(Pj));
 
-	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	outputfilepergen = open(string("RichnessPerGen_AnaG_",anaG,"_retG_",retG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
 	writedlm(outputfilepergen, ["Real Cost J G Gi anaG retG mr ml v gamma Site dT lakeArea alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
-	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	outputfile = open(string("RichnessPerSite_AnaG_",anaG,"_retG_",retG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
 	writedlm(outputfile,["Real Cost Model J G anaG retG Site lakeArea Ji dT mr ml v gamma alpharich SpecANA SpecCLA SpecMR DispersalRich"]);
 
-	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
+	phylogenyfile = open(string("Phylogeny_AnaG_",anaG,"_retG_",retG,"_cost_",cost,"_MR_",signif(mr,3),"_VR_",signif(v,3),".txt"),"a")
 	writedlm(phylogenyfile,["Repl Ancestral Derived Age"]);
 
   @inbounds for (ri in 1:nreal)#realizations
