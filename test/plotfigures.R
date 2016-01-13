@@ -1,7 +1,6 @@
-library(gdata)
-library(ggplot2)
-library(plyr)
-library(reshape2)
+#library(ggplot2)
+#library(plyr)
+#library(reshape2)
 
 error.bar <- function(x, y, upper, mycolor, lower=upper, length=0.1,...){
   if(length(x) != length(y) | length(y) !=length(lower) | length(lower) != length(upper))
@@ -13,18 +12,20 @@ error.bar <- function(x, y, upper, mycolor, lower=upper, length=0.1,...){
 printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
 
     cat("Plotting...\n");
-    cost<-unlist(strsplit(unlist(strsplit(sufix,'M'))[1],'_'))[5];    
     dat<-read.table(inputfile1,header=TRUE);#average
     dat2<-read.table(inputfile2,header=TRUE);#sd    
-    yrange<-range(0,150)*1.2;
+    yrange<-range(0,350)*1.2;
     xrange<-c(0.05,1.25);
     anaG<-dat$anaG[1];    
+    cost<-unlist(strsplit(unlist(strsplit(sufix,'M'))[1],'_'))[7];    
+    retG<-unlist(strsplit(unlist(strsplit(sufix,'M'))[1],'_'))[5];   
+    retG<-as.numeric(retG)/anaG; 
     nrep<-max(dat$Real);
     lakesarea<-dat$lakeArea;
     lakesisolation<-dat$dT;    
     figure1<-paste("Richness_Isolation_",sufix,".png",sep=""); 
     png(figure1,width=1980,height=1280,res=300);
-    plot(lakesisolation,dat$alpharich,xlab="Isolation level",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Isolation x Richness\ncost = ",cost,", anaG = ",anaG,sep=""),lwd=10,log="x",ylim=yrange,xlim=xrange);
+    plot(lakesisolation,dat$alpharich,xlab="Isolation level",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Isolation x Richness\ncost = ",cost,", retG = ",retG,sep=""),lwd=10,log="x",ylim=yrange,xlim=xrange);
     error.bar(x = lakesisolation, y = dat$alpharich, upper = dat2$alpharich, lower = dat2$alpharich, mycolor = "black")
     dev.off();
     
@@ -32,7 +33,7 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     png(figure2,width=1980,height=1280,res=300);
     mindt<-min(dat$dT);#minimal isolation
     maxdt<-max(dat$dT);#maximal isolation
-    plot(lakesarea,dat$alpharich,xlab="Area of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Size of lakes x Richness x Isolation\ncost = ",cost,", anaG = ",anaG,sep=""),lwd=10,log="x",cex=(1.51-((dat$dT-mindt)/(maxdt-mindt))),ylim=yrange,xlim=range(lakesarea));
+    plot(lakesarea,dat$alpharich,xlab="Area of the lakes (km^2)",ylab=expression(paste(alpha,"-rich",sep="")),pch=19,main=paste("Size of lakes x Richness x Isolation\ncost = ",cost,", retG = ",retG,sep=""),lwd=10,log="x",cex=(1.51-((dat$dT-mindt)/(maxdt-mindt))),ylim=yrange,xlim=range(lakesarea));
     error.bar(x = lakesarea, y = dat$alpharich, upper = dat2$alpharich, lower = dat2$alpharich, mycolor = "black")
     legend("topleft",legend=c(signif(mindt,3),signif(maxdt,3)),pch=c(19,19),pt.cex=c(2.502,1.502),title="Isolation level");
     dev.off();
@@ -42,7 +43,7 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     lakesnames<-paste("lake",1:nsites,sep="");#we should replace this list by the real names of the lakes.
     lakesarea<-dat$lakeArea;
     orderbyarea<-order(lakesarea);
-    mp<-barplot(rbind((dat$SpecANA/dat$alpharich)[orderbyarea],(dat$SpecCLA/dat$alpharich)[orderbyarea],(dat$SpecMR/dat$alpharich)[orderbyarea],(dat$DispersalRich/dat$alpharich)[orderbyarea]),main=paste("Origin of species\ncost = ",cost,", anaG = ",anaG,sep=""),xlab="Area of the lakes (Km^2)",ylab="Proportion of Species",col=c("green","darkblue","yellow","red"),ylim=c(0,1));
+    mp<-barplot(rbind((dat$SpecANA/dat$alpharich)[orderbyarea],(dat$SpecCLA/dat$alpharich)[orderbyarea],(dat$SpecMR/dat$alpharich)[orderbyarea],(dat$DispersalRich/dat$alpharich)[orderbyarea]),main=paste("Origin of species\ncost = ",cost,", retG = ",retG,sep=""),xlab="Area of the lakes (Km^2)",ylab="Proportion of Species",col=c("green","darkblue","yellow","red"),ylim=c(0,1));
     text(mp, par("usr")[3] - 0.01, srt = 45, adj = 1,labels = signif(lakesarea[orderbyarea],2),xpd = TRUE, font = 2)
     dev.off();
 
@@ -51,7 +52,7 @@ printfigures<-function(inputfile1,inputfile2,nsites,sufix,verticesdatafile){
     lakesnames<-paste("lake",1:nsites,sep="");#we should replace this list by the real names of the lakes.
     lakesisolation<-dat$dT;
     orderbyisolation<-order(lakesisolation);
-    mp<-barplot(rbind((dat$SpecANA/dat$alpharich)[orderbyisolation],(dat$SpecCLA/dat$alpharich)[orderbyisolation],(dat$SpecMR/dat$alpharich)[orderbyisolation],(dat$DispersalRich/dat$alpharich)[orderbyisolation]),main=paste("Origin of species\ncost = ",cost,", anaG = ",anaG,sep=""),xlab="Isolation of the lakes",ylab="Proportion of Species",col=c("green","darkblue","yellow","red"),ylim=c(0,1));
+    mp<-barplot(rbind((dat$SpecANA/dat$alpharich)[orderbyisolation],(dat$SpecCLA/dat$alpharich)[orderbyisolation],(dat$SpecMR/dat$alpharich)[orderbyisolation],(dat$DispersalRich/dat$alpharich)[orderbyisolation]),main=paste("Origin of species\ncost = ",cost,", retG = ",retG,sep=""),xlab="Isolation of the lakes",ylab="Proportion of Species",col=c("green","darkblue","yellow","red"),ylim=c(0,1));
     text(mp, par("usr")[3] - 0.01, srt = 45, adj = 1,labels = signif(lakesisolation[orderbyisolation],2),xpd = TRUE, font = 2)
     dev.off();
 }
